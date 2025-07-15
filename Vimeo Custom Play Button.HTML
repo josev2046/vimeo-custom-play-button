@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Vimeo Play/Replay Button</title>
+    <style>
+        .video-container {
+            position: relative;
+            width: 640px; /* Adjust as needed */
+            height: 360px; /* Adjust as needed, maintaining aspect ratio */
+        }
+        .custom-button { /* Renamed for broader use (play/replay/pause) */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10; /* Ensure it's above the iframe */
+            transition: opacity 0.3s ease-in-out; /* Smooth transition */
+            opacity: 1; /* Default to visible */
+            pointer-events: auto; /* Default to clickable */
+        }
+        .custom-button .icon-play {
+            content: '';
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 15px 0 15px 25px;
+            border-color: transparent transparent transparent #fff;
+        }
+        .custom-button .icon-pause {
+            width: 20px;
+            height: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .custom-button .icon-pause::before,
+        .custom-button .icon-pause::after {
+            content: '';
+            width: 8px;
+            height: 100%;
+            background-color: #fff;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none; /* Make it unclickable when hidden */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-container">
+        <iframe
+            id="vimeoPlayer"
+            src="https://player.vimeo.com/video/1099811071?autoplay=0&controls=0&api=1&player_id=vimeoPlayer"
+            width="100%"
+            height="100%"
+            frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowfullscreen
+        ></iframe>
+        <div id="mainCustomButton" class="custom-button">
+            <div class="icon-play"></div>
+        </div>
+    </div>
+
+    <script src="https://player.vimeo.com/api/player.js"></script>
+    <script>
+        const iframe = document.getElementById('vimeoPlayer');
+        const player = new Vimeo.Player(iframe);
+        const mainCustomButton = document.getElementById('mainCustomButton');
+
+        // Function to update the icon based on player state
+        function updateButtonIcon(isPlayIcon) {
+            mainCustomButton.innerHTML = ''; // Clear current icon
+            const iconDiv = document.createElement('div');
+            if (isPlayIcon) {
+                iconDiv.className = 'icon-play';
+            } else {
+                iconDiv.className = 'icon-pause'; // Or whatever visual you want for 'stop'/'pause'
+            }
+            mainCustomButton.appendChild(iconDiv);
+        }
+
+        // Function to show/hide the custom button
+        function toggleCustomButtonVisibility(show) {
+            if (show) {
+                mainCustomButton.classList.remove('hidden');
+            } else {
+                mainCustomButton.classList.add('hidden');
+            }
+        }
+
+        // Handle button click
+        mainCustomButton.addEventListener('click', function() {
+            player.getPaused().then(function(paused) {
+                if (paused) {
+                    player.play();
+                } else {
+                    player.pause(); // Allows clicking to pause
+                }
+            }).catch(function(error) {
+                console.error('Error getting player state on click:', error);
+                player.play(); // Fallback to play if state cannot be determined
+            });
+        });
+
+        // Event listeners for player state changes
+        player.on('play', function() {
+            toggleCustomButtonVisibility(false); // Hide custom button when video plays
+            // updateButtonIcon(false); // Optionally, change to a pause icon if you keep button visible
+        });
+
+        player.on('pause', function() {
+            toggleCustomButtonVisibility(true); // Show custom button when video pauses
+            updateButtonIcon(true); // Ensure it's a play icon for resuming
+        });
+
+        player.on('ended', function() {
+            toggleCustomButtonVisibility(true); // Show custom button when video ends
+            updateButtonIcon(true); // Ensure it's a play icon for replaying
+        });
+
+        // Initial state check
+        player.getPaused().then(function(paused) {
+            if (paused) {
+                toggleCustomButtonVisibility(true);
+                updateButtonIcon(true); // Start with play icon
+            } else {
+                // If the video somehow starts playing immediately (e.g., autoplay=1 was briefly set for testing)
+                toggleCustomButtonVisibility(false);
+                // updateButtonIcon(false); // Could show pause icon if you wanted it visible while playing
+            }
+        }).catch(function(error) {
+            console.error('Error getting initial player state:', error);
+            toggleCustomButtonVisibility(true); // Default to showing play button on error
+            updateButtonIcon(true);
+        });
+    </script>
+
+</body>
+</html>
