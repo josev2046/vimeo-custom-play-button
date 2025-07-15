@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15920895.svg)](https://doi.org/10.5281/zenodo.15920895)
+
 These notes detail the implementation of a bespoke play/pause/replay button for an embedded Vimeo video. It outlines how the button's visual elements, namely the play and pause icons, are generated purely through CSS, without reliance on image files. The accompanying JavaScript then orchestrates the button's visibility and functionality, enabling seamless interaction with the Vimeo Player SDK to control video playback and respond to player states such as playing, paused, or ended.
 
 <img width="1320" height="1108" alt="image" src="https://github.com/user-attachments/assets/59952f8c-686f-4f77-8684-64efd982e86c" />
