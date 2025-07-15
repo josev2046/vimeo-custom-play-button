@@ -1,0 +1,127 @@
+@startuml
+
+
+participant "Web Page (HTML/CSS)" as WebPage
+participant "Custom Button" as Button
+participant "Vimeo Player SDK" as SDK
+participant "Vimeo Video" as Video
+
+title Simplified Player Control Flow
+
+[-> WebPage : Page Loads
+activate WebPage
+note right
+  The web page begins loading, initiating the client-side application.
+end note
+
+WebPage -> Button : Create/Render Custom Button (HTML/CSS)
+activate Button
+note right
+  The custom play/pause button element is rendered on the page
+  using standard HTML and CSS. It is initially visible.
+end note
+
+WebPage -> SDK : Initialise Player
+activate SDK
+SDK -> Video : Load Video (controls hidden)
+note right
+  The Vimeo Player SDK is initialised, linking to the embedded
+  Vimeo video. The 'controls=0' parameter ensures Vimeo's
+  native player controls are suppressed.
+end note
+
+SDK -> Button : Request Player State (Is paused?)
+deactivate SDK
+activate Button
+Button --> Button : Adjust visibility/icon based on state
+note right
+  Upon initialisation, the custom button queries the player's
+  current state. If the video is paused (the default state),
+  the button remains visible with a 'play' icon.
+  If the video were somehow already playing, the button would hide.
+end note
+deactivate Button
+
+' Implicit User Interaction (Click)
+[-> Button : Click Button
+activate Button
+note right
+  The user interacts by clicking the custom button.
+end note
+Button -> SDK : Request Current Player State
+activate SDK
+note right
+  The button requests the current playback status from the Vimeo SDK.
+end note
+
+alt Player is Paused OR Ended
+    SDK --> Button : State: Paused/Ended
+    note right
+      The SDK confirms the video is either paused or has reached its end.
+    end note
+    Button -> SDK : Play Video
+    SDK -> Video : Play
+    deactivate SDK
+    note right
+      The SDK instructs the Vimeo video to begin playback.
+    end note
+    Button -> Button : Hide Button
+    note right
+      The custom button conceals itself as the video is now playing.
+    end note
+else Player is Playing
+    SDK --> Button : State: Playing
+    note right
+      The SDK confirms the video is currently active.
+    end note
+    Button -> SDK : Pause Video
+    SDK -> Video : Pause
+    deactivate SDK
+    note right
+      The SDK instructs the Vimeo video to pause playback.
+    end note
+    Button -> Button : Show Button
+    Button -> Button : Set Icon to 'Play'
+    note right
+      The custom button reappears, displaying a 'play' icon,
+      ready for the user to resume playback.
+    end note
+end
+deactivate Button
+
+Video --> SDK : 'Play' Event
+activate SDK
+note right
+  The Vimeo video signals that it has started playing.
+end note
+SDK --> Button : Hide Button
+deactivate SDK
+note right
+  The custom button is hidden in response to the 'play' event.
+end note
+
+Video --> SDK : 'Pause' Event
+activate SDK
+note right
+  The Vimeo video signals that it has paused.
+end note
+SDK --> Button : Show Button, Set Icon to 'Play'
+deactivate SDK
+note right
+  The custom button becomes visible and displays the 'play' icon,
+  indicating readiness to resume.
+end note
+
+Video --> SDK : 'Ended' Event
+activate SDK
+note right
+  The Vimeo video signals that playback has completed.
+end note
+SDK --> Button : Show Button, Set Icon to 'Play'
+deactivate SDK
+note right
+  The custom button becomes visible and displays the 'play' icon,
+  allowing the user to initiate a replay.
+end note
+
+@enduml
