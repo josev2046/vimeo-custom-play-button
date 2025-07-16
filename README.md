@@ -36,3 +36,9 @@ The play icon (a triangle) is created using CSS `border-style` properties on a d
 ### JavaScript (updateButtonIcon function)
 The `updateButtonIcon` JavaScript function is responsible for dynamically clearing the current icon and appending a new div with the appropriate class (`icon-play` or `icon-pause`) to `mainCustomButton`, thereby changing the visual representation of the button.
 
+### Interaction with the Player SDK (and methods)
+
+<img width="1130" height="966" alt="image" src="https://github.com/user-attachments/assets/06ea6ee6-378c-4a0b-ad1c-ca40c8a1adb5" />
+
+
+
