@@ -125,3 +125,84 @@ note right
 end note
 
 @enduml
+
+--
+
+@startuml
+!theme plain
+skinparam SequenceBoxFontSize 12
+skinparam SequenceParticipantFontSize 12
+
+
+actor "User" as User
+participant "Client Web Page & Script" as Client
+box "Vimeo Player SDK" #LightBlue
+    participant "Vimeo.Player Object" as PlayerSDK
+    participant "Vimeo Embedded Player" as VimeoEmbed
+end box
+
+autonumber
+
+Client -> PlayerSDK: new Vimeo.Player(iframe)
+note left: Initializes SDK with iframe element
+note right: `new Vimeo.Player(iframe)`
+activate Client
+
+PlayerSDK -> VimeoEmbed: Query initial 'paused' state
+activate VimeoEmbed
+VimeoEmbed --> PlayerSDK: Returns 'paused' state
+deactivate VimeoEmbed
+PlayerSDK --> Client: 'getPaused' result (Promise)
+note right: `player.getPaused().then(...)`
+deactivate PlayerSDK
+
+Client -> Client: Adjusts custom button visibility/icon
+note left: `updateButtonIcon()`, `toggleCustomButtonVisibility()`
+
+User -> Client: Clicks Custom Button
+activate Client
+
+Client -> PlayerSDK: Query current 'paused' state
+note right: `player.getPaused().then(...)`
+activate PlayerSDK
+VimeoEmbed --> PlayerSDK: Returns player state
+activate VimeoEmbed
+VimeoEmbed --> PlayerSDK: Returns player state
+deactivate VimeoEmbed
+PlayerSDK --> Client: 'paused' state
+deactivate PlayerSDK
+
+alt If player is paused
+    Client -> PlayerSDK: play() command
+    note right: `player.play()`
+    activate PlayerSDK
+    VimeoEmbed --> PlayerSDK: Playback started
+    activate VimeoEmbed
+    VimeoEmbed --> PlayerSDK: Playback started
+    deactivate VimeoEmbed
+    PlayerSDK --> Client: Command acknowledged
+    deactivate PlayerSDK
+else If player is playing
+    Client -> PlayerSDK: pause() command
+    note right: `player.pause()`
+    activate PlayerSDK
+    VimeoEmbed --> PlayerSDK: Initiate pause
+    activate VimeoEmbed
+    VimeoEmbed --> PlayerSDK: Paused
+    deactivate VimeoEmbed
+    PlayerSDK --> Client: Command acknowledged
+    deactivate PlayerSDK
+end alt
+
+VimeoEmbed --> PlayerSDK: 'play' / 'pause' / 'ended' event
+activate PlayerSDK
+VimeoEmbed --> PlayerSDK: Event notification
+note right: `player.on('play', ...)` \n`player.on('pause', ...)` \n`player.on('ended', ...)`
+PlayerSDK --> Client: Event notification
+deactivate PlayerSDK
+
+Client -> Client: Adjusts custom button visibility/icon
+note left: `updateButtonIcon()`, `toggleCustomButtonVisibility()`
+deactivate Client
+
+@enduml
